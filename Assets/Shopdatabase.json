@@ -1,0 +1,13 @@
+{
+    "shopLv": 0,
+    "itemNames": [
+        "Medkit",
+        "Katana",
+        "Lantern"
+    ],
+    "itemAmounts": [
+        2,
+        0,
+        2
+    ]
+}
