@@ -1,108 +1,81 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class PriorityQueue<T> where T : IComparable<T>
 {
-    public List<T> heap = new List<T>();
+    private List<T> _heap = new List<T>();
 
-    public int Count => heap.Count;
-
-    public T Contains(T t)
+    //O(log N)
+    public void Enqueue(T item)
     {
-        int idx = heap.IndexOf(t);
-        if (idx < 0) return default(T);
-        return heap[idx];
-    }
+        _heap.Add(item);
+        int last = _heap.Count - 1;
 
-    public void Push(T data)
-    {
-        heap.Add(data);
-        int now = heap.Count - 1;
-
-        while (now > 0)
+        while (last > 0)
         {
-            int next = (now - 1) / 2;
-            if (heap[now].CompareTo(heap[next]) < 0)
-            {
+            int mid = (last - 1) / 2;
+            if (_heap[last].CompareTo(_heap[mid]) >= 0)
                 break;
-            }
 
-            T temp = heap[now];
-            heap[now] = heap[next];
-            heap[next] = temp;
-
-            now = next;
+            Swap(last, mid);
+            last = mid;
         }
     }
 
-    public T Pop()
+    //O(log N)
+    public T Dequeue()
     {
-        T ret = heap[0];
-
-        int lastIndex = heap.Count - 1;
-        heap[0] = heap[lastIndex];
-        heap.RemoveAt(lastIndex);
-        lastIndex--;
-
-        int now = 0;
-
-        while (true)
+        if (IsEmpty())
         {
-            int left = 2 * now + 1;
-            int right = 2 * now + 1;
-
-            int next = now;
-            if (left <= lastIndex && heap[next].CompareTo(heap[left]) < 0)
-            {
-                next = left;
-            }
-            if (right <= lastIndex && heap[next].CompareTo(heap[right]) < 0)
-            {
-                next = right;
-            }
-
-            if (next == now)
-            {
-                break;
-            }
-
-            T temp = heap[now];
-            heap[now] = heap[next];
-            heap[next] = temp;
-
-            now = next;
+            Debug.LogError("PriorityQueue is empty but you still try to dequeue");
+            return default(T);
         }
 
-        return ret;
-    }
+        T root = _heap[0];
+        T last = _heap[_heap.Count - 1];
+        _heap.RemoveAt(_heap.Count - 1);
 
-    public void Recalculation(T node)
-    {
-        int now = heap.IndexOf(node);
-
-        while (now > 0)
+        if (!IsEmpty())
         {
-            int next = (now - 1) / 2;
-            if (heap[now].CompareTo(heap[next]) < 0)
-            {
-                break;
-            }
-
-            T temp = heap[now];
-            heap[now] = heap[next];
-            heap[next] = temp;
-
-            now = next;
+            _heap[0] = last;
+            Update(0);
         }
+
+        return root;
     }
 
-    public T Peak()
-    {
-        return heap.Count == 0 ? default(T) : heap[0];
-    }
+    public bool IsEmpty()
+        => _heap.Count == 0;
 
     public void Clear()
+        => _heap.Clear();
+
+
+
+    private void Swap(int i, int j)
     {
-        heap.Clear();
+        T temp = _heap[i];
+        _heap[i] = _heap[j];
+        _heap[j] = temp;
+    }
+
+    private void Update(int index)
+    {
+        int smallest = index;
+        int left = 2 * index + 1;
+        int right = 2 * index + 2;
+
+        if (left < _heap.Count && _heap[left].CompareTo(_heap[smallest]) < 0)
+            smallest = left;
+
+        if (right < _heap.Count && _heap[right].CompareTo(_heap[smallest]) < 0)
+            smallest = right;
+
+        if (smallest != index)
+        {
+            Swap(index, smallest);
+            Update(smallest);
+        }
     }
 }
