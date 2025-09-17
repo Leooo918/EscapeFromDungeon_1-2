@@ -5,10 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class NavAgent : MonoBehaviour
 {
-    private PriorityQueue<AstarNode> _priorityQueue;
-    private List<Vector3Int> _visit;
-
-    private List<Vector3Int> routePath;
+    private HashSet<Vector3Int> _visit; //방문 했는지 확인만
+    private List<Vector3Int> routePath; //경로가 저장
     private int moveIdx = 0;
 
     private Vector3Int currentPos;
@@ -44,9 +42,8 @@ public class NavAgent : MonoBehaviour
     private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        _visit = new List<Vector3Int>();
+        _visit = new HashSet<Vector3Int>();
         routePath = new List<Vector3Int>();
-        _priorityQueue = new PriorityQueue<AstarNode>();
     }
 
     private void Start()
@@ -70,26 +67,24 @@ public class NavAgent : MonoBehaviour
 
     private void CalculatePath()
     {
-        _priorityQueue.Clear();
         _visit.Clear();
-
         routePath = GetPath(currentPos, destinationPos);
     }
 
     public List<Vector3Int> GetPath(Vector3Int start, Vector3Int end, int maxPathDistance = 100)
     {
-        if (_priorityQueue == null) _priorityQueue = new PriorityQueue<AstarNode>();
-        _priorityQueue.Clear();
+        PriorityQueue<AstarNode> priorityQueue = new PriorityQueue<AstarNode>();
+        priorityQueue.Clear();
         List<Vector3Int> path = new List<Vector3Int>();
 
         Vector3Int currentPosition = start;
         AstarNode currentNode = new AstarNode(start, end, currentPosition, null);
 
-        _priorityQueue.Enqueue(currentNode);
+        priorityQueue.Enqueue(currentNode);
 
-        while (_priorityQueue.IsEmpty() == false)
+        while (priorityQueue.IsEmpty() == false)
         {
-            currentNode = _priorityQueue.Dequeue();
+            currentNode = priorityQueue.Dequeue();
             currentPosition = new Vector3Int(currentNode.x, currentNode.y);
 
             if (currentPosition == end || currentNode.TotalDistance > maxPathDistance)
@@ -103,7 +98,7 @@ public class NavAgent : MonoBehaviour
                 if (_visit.Contains(newPosition)) continue;
 
                 _visit.Add(newPosition);
-                _priorityQueue.Enqueue(new AstarNode(start, end, newPosition, currentNode));
+                priorityQueue.Enqueue(new AstarNode(start, end, newPosition, currentNode));
             }
         }
 
